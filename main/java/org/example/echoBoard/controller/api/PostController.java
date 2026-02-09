@@ -4,12 +4,17 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.example.echoBoard.dto.request.PostCreateRequest;
 import org.example.echoBoard.dto.response.PostResponse;
+import org.example.echoBoard.model.Post;
 import org.example.echoBoard.model.User;
 import org.example.echoBoard.service.CommentService;
 import org.example.echoBoard.service.PostService;
 import org.example.echoBoard.service.RedisService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -41,5 +46,15 @@ public class PostController {
         System.out.println("댓글 삭제 요청중");
         commentService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @GetMapping("/search")
+    public String searchPosts(@RequestParam String query, Model model,
+                              @PageableDefault(size = 10) Pageable pageable) {
+        Page<PostResponse> searchResults = postService.searchPosts(query, pageable);
+        model.addAttribute("posts", searchResults);
+        model.addAttribute("query", query);
+        return "posts"; // 기존 게시판 리스트 뷰 재사용
     }
 }

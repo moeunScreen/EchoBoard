@@ -23,4 +23,5 @@ public class PostResponse {
         this.author = post.getUser().getUsername();
         this.createdAt = post.getCreatedAt();
     }
+
 }

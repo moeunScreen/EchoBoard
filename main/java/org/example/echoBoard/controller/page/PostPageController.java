@@ -34,9 +34,9 @@ public class PostPageController {
     @GetMapping
     public String postList(@PageableDefault(size = 10) Pageable pageable, Model model) {
         Page<PostResponse> page = postService.findAll(pageable);
-        model.addAttribute("posts", page.getContent());
-        model.addAttribute("page",page);
-        model.addAttribute("topPosts", postService.findTop5Post()); // TOP N
+        model.addAttribute("posts", page.getContent()); // 반복문용 리스트
+        model.addAttribute("page", page);              // 페이징용
+        model.addAttribute("topPosts", postService.findTop5Post());
         return "post";
     }
 
@@ -89,5 +89,16 @@ public class PostPageController {
                 .map(postService::findById)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/search")
+    public String searchPosts(@RequestParam String query, Model model,
+                              @PageableDefault(size = 10) Pageable pageable) {
+        Page<PostResponse> page = postService.searchPosts(query, pageable);
+        model.addAttribute("posts", page.getContent()); // 반복문용 리스트
+        model.addAttribute("page", page);              // 페이징용
+        model.addAttribute("query", query);            // 검색어 유지
+        model.addAttribute("topPosts", postService.findTop5Post());
+        return "post";
     }
 }

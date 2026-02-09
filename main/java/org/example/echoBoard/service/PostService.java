@@ -15,6 +15,7 @@ import org.example.echoBoard.repository.UserRepository;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,11 +61,12 @@ public class PostService {
 
         Map<Long,Long> viewCountMap = redisService.getAllViewCount(postIds);
 
-        return posts.map(post -> new PostResponse(
-                post,viewCountMap.getOrDefault(post.getId(),0L)
-                )
-        );
+        List<PostResponse> dtoList = posts.stream()
+                .map(post -> new PostResponse(post, viewCountMap.getOrDefault(post.getId(), 0L)))
+                .toList();
 
+        // 5. PageImpl로 새 Page 객체 반환 (원래 페이징 정보 유지)
+        return new PageImpl<>(dtoList, pageable, posts.getTotalElements());
     }
 
     public List<PostResponse> findTop5Post() {
@@ -107,6 +109,17 @@ public class PostService {
     public void deletePost(Long postId){
         postRepository.deleteById(postId);
         redisService.deletePostRedis(postId);
+    }
+
+
+    public Page<PostResponse> searchPosts(String query, Pageable pageable) {
+        Page<Post> posts = postRepository.findByKeyword(query, pageable);
+        List<PostResponse> dtoList = posts.stream().map(post->{
+            long viewCount = redisService.getPostViewByPostId(post.getId());
+           return new PostResponse(post,viewCount);
+        }).toList();
+
+        return new PageImpl<>(dtoList,pageable,posts.getTotalElements());
     }
 
 
