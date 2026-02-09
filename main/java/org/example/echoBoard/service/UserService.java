@@ -118,6 +118,8 @@ public class UserService{
 
         // 서버 세션에 최소 정보만 저장
         newSession.setAttribute("USER_ID", user.getId());
+
+
     }
 
     public User register(User user) {

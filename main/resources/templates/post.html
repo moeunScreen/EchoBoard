@@ -265,9 +265,9 @@
             </form>
         </div>
 
-        <div class="search-results">
+        <div class="search-results" th:if="${query != null}">
             <a href="/posts" class="posts-link">← 게시판</a>
-            <h2 th:if="${query != null}">🔍 검색 결과: <span th:text="${query}">검색어</span></h2>
+            <h2>🔍 검색 결과: <span th:text="${query}">검색어</span></h2>
         </div>
     <ul class="post-list">
         <li th:each="post : ${posts}"

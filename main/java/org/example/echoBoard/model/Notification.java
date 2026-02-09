@@ -18,20 +18,32 @@ public class Notification {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "receiver_id", nullable = false)
+    private User receiver;
 
 
     private String message;
 
     @Builder.Default
-    private Boolean isRead = false;
+    @Column(name = "is_read")
+    private Boolean read = false;
 
     private LocalDateTime createdAt;
+
+    private String url;
+
+    public Notification(User receiver, String message, String url) {
+        this.receiver = receiver;
+        this.message = message;
+        this.url = url;
+        this.read = false;
+        this.createdAt = LocalDateTime.now();
+    }
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
 
 }

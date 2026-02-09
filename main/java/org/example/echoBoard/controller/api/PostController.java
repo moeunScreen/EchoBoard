@@ -34,6 +34,7 @@ public class PostController {
 
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+        System.out.println("delete포스트 요청 postId : "+postId); // null이면 존재 안 함
         commentService.deleteCommentsByPostId(postId);
         redisService.deletePostRedis(postId);
         postService.deletePost(postId);

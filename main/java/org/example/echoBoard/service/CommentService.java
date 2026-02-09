@@ -7,6 +7,7 @@ import org.example.echoBoard.model.Notification;
 import org.example.echoBoard.model.Post;
 import org.example.echoBoard.model.User;
 import org.example.echoBoard.repository.CommentRepository;
+import org.example.echoBoard.repository.NotificationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class CommentService {
     private final UserService userService;
 
     private final CommentRepository commentRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public void addComment(Long postId, Long userId, String content) {
@@ -60,6 +62,33 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+
+        // 알림 생성
+        if (!post.getUser().getId().equals(userId)) {
+            int limit = 20;
+            String preview;
+            if (content.length() > limit) {
+                int cut = content.lastIndexOf(" ", limit);
+                if (cut == -1) {
+                    cut = limit;
+                }
+                preview = content.substring(0, cut) + "…";
+            } else {
+                preview = content;
+            }
+            String message = user.getUsername()
+                    + "님이 댓글을 남겼습니다: \""
+                    + preview + "\"";
+
+            String url = "/posts/" + post.getId();
+
+            Notification notification = new Notification(
+                    post.getUser(),
+                    message,
+                    url
+            );
+            notificationRepository.save(notification);
+        }
 
         return toDto(comment);
 

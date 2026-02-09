@@ -274,7 +274,7 @@
     </div>
 
 
-
+    <div class="post" th:data-id="${post.id}">
     <div class="post-content" th:text="${post.content}">
         게시글 내용
     </div>
@@ -287,9 +287,10 @@
             text-decoration: none;" class="post-link"> 게시판으로 돌아가기</a>
     </div>
 
-    <button th:if="${USER_ID != null and USER_ID == post.userId}"
-            class="delete-post-btn" th:data-id="${post.id}">삭제</button>
-
+        <button th:if="${USER_ID != null and USER_ID == post.userId}"
+                class="delete-post-btn"
+                type="button">삭제</button>
+    </div>
     </div>
     <div class="comment-section">
         <div id="commentList"></div>
@@ -357,10 +358,22 @@
     //삭제
     document.addEventListener('click', async (e) => {
         if(e.target.classList.contains('delete-post-btn')) {
+            e.preventDefault();
             if (!confirm("정말 삭제할까요?")) return;
+
             const postId = e.target.closest('.post').dataset.id;
-            await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
-            window.location.href = "/posts";
+            console.log("delete postId : "+postId);
+            try {
+                const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    window.location.href = "/posts"; // 삭제 성공 후 이동
+                } else {
+                    alert("삭제 실패!");
+                }
+            } catch(err) {
+                console.error(err);
+                alert("삭제 중 오류 발생!");
+            }
         }
 
         if(e.target.classList.contains('delete-comment-btn')) {

@@ -41,6 +41,7 @@ public class LoginController {
 
         try {
             userService.login(username, password, request);
+
             return "redirect:/"; //로그인 성공
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addAttribute("error", e.getMessage());
