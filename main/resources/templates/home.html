@@ -154,7 +154,7 @@
 <div class="container">
 
     <div class="notification-wrapper">
-        <button class="notification-btn" onclick="toggleNotification()">
+        <button class="notification-btn" id="notificationBtn">
             🔔
             <span class="badge"
                   id="notificationBadge"
@@ -167,6 +167,13 @@
             <div th:if="${#lists.isEmpty(notifications)}"
                  class="notification-empty">
                 새로운 알림이 없습니다.
+            </div>
+
+            <div th:if="${!#lists.isEmpty(notifications)}" class="notification-read-all">
+                <div id="readAllBtn"
+                     style="background:transparent; padding:5px 10px; text-align:left; cursor:pointer; font-weight:normal; color:#333;">
+                    답글 모두 확인
+                </div>
             </div>
 
             <div th:each="noti : ${notifications}"
@@ -186,8 +193,10 @@
         </div>
     </div>
 
-    <h1>환영합니다!</h1>
+    <div class ="home">
+        <p th:text="${username} + '님 환영합니다!'"></p>
     <p>로그인에 성공했습니다.</p>
+    </div>
 
     <div class="top-actions">
         <form th:action="@{/posts}" method="get">
@@ -204,50 +213,69 @@
 </body>
 <script>
 
-    function toggleNotification() {
-        const dropdown = document.getElementById("notificationDropdown");
-        dropdown.style.display =
-            dropdown.style.display === "block" ? "none" : "block";
-    }
-
     document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("notificationBtn");
+        const dropdown = document.getElementById("notificationDropdown");
+        const readAllBtn = document.getElementById('readAllBtn');
+        btn.addEventListener("click", () => {
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        });
+        if(readAllBtn){
+            readAllBtn.addEventListener('click', () => {
+                fetch('/notifications/read-all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(res => {
+                        if(res.ok){
+                            // 모든 알림 제거
+                            document.querySelectorAll('.notification-item.unread').forEach(item => item.remove());
 
+                            // 배지 0
+                            const badge = document.getElementById('notificationBadge');
+                            if(badge) badge.style.display = 'none';
+
+                            // 클릭한 '모두 확인' 제거
+                            readAllBtn.remove();
+
+                            // 알림 없으면 '새로운 알림이 없습니다.' 표시
+                            const dropdown = document.getElementById('notificationDropdown');
+                            if(dropdown.querySelectorAll('.notification-item').length === 0){
+                                if(!dropdown.querySelector('.notification-empty')){
+                                    const emptyDiv = document.createElement('div');
+                                    emptyDiv.className = 'notification-empty';
+                                    emptyDiv.textContent = '새로운 알림이 없습니다.';
+                                    dropdown.appendChild(emptyDiv);
+                                }
+                            }
+                        } else {
+                            alert('오류 발생');
+                        }
+                    });
+            });
+        }
+
+        // 기존 개별 알림 클릭 이벤트
         document.querySelectorAll(".notification-item").forEach(item => {
-
             item.addEventListener("click", function () {
-
                 console.log("clicked");
-
                 const notificationId = this.dataset.id;
                 const url = this.dataset.url;
-
-                fetch(`/notification/${notificationId}/read`, {
-                    method: "POST"
-                })
+                fetch(`/notifications/${notificationId}/read`, { method: "POST" })
                     .then(res => res.json())
                     .then(data => {
-
                         this.classList.remove("unread");
-
                         const badge = document.getElementById("notificationBadge");
-
                         if (data.unreadCount > 0) {
                             badge.innerText = data.unreadCount;
                         } else if (badge) {
                             badge.style.display = "none";
                         }
-
-                        console.log("url = "+url);
                         window.location.href = url;
                     });
-
             });
-
         });
-
     });
-
-
 
 </script>
 </html>

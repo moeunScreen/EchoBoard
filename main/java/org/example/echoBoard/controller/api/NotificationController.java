@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/notification")
+@RequestMapping("/notifications")
 public class NotificationController {
     private final NotificationService notificationService;
 
@@ -47,7 +47,7 @@ public class NotificationController {
     }
 
     // 모두 읽음
-    @PostMapping("/notifications/read-all")
+    @PostMapping("/read-all")
     @Transactional
     public String readAll(HttpSession session) {
 
