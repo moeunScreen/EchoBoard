@@ -1,22 +1,21 @@
-package org.example.echoBoard.controller.page;
+package org.example.echoBoard.controller.api;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.example.echoBoard.model.Notification;
-import org.example.echoBoard.model.User;
 import org.example.echoBoard.service.NotificationService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/notification")
-public class NotificationPageController {
+public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping()
@@ -33,13 +32,18 @@ public class NotificationPageController {
 
     // 알림 하나 읽음
     @PostMapping("/{id}/read")
+    @ResponseBody
     @Transactional
-    public String readOne(@PathVariable Long id) {
+    public Map<String, Object> readOne(@PathVariable Long id,HttpSession session) {
         Notification notification =
                 notificationService.findById(id);
-
         notificationService.setRead(id);
-        return  "redirect:" + notification.getUrl();
+        Long userId = (Long) session.getAttribute("USER_ID");
+        long unreadCount = notificationService.countByReceiver_IdAndReadFalse(userId);
+        return Map.of(
+                "success", true,
+                "unreadCount", unreadCount
+        );
     }
 
     // 모두 읽음

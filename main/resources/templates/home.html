@@ -17,11 +17,13 @@
         }
 
         .container {
+            position: relative;
             text-align: center;
             background-color: rgba(255, 255, 255, 0.85);
             padding: 40px 60px;
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            padding-top: 80px;
         }
 
         h1 {
@@ -50,32 +52,137 @@
             background-color: #357ABD;
             transform: translateY(-2px);
         }
-        .notification {
-            position: relative;
-            font-size: 24px;
+
+        .notification-wrapper {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            margin-bottom: 30px;
+        }
+
+        .notification-btn {
+            position: relative;   /* 기준점 */
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
         }
 
         .badge {
             position: absolute;
-            top: -5px;
-            right: -10px;
+            top: -6px;     /* 위로 올리기 */
+            right: -2px;   /* 오른쪽으로 붙이기 */
+
             background: red;
             color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
             font-size: 12px;
+            font-weight: bold;
+
+            padding: 2px 6px;
+            border-radius: 50px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            top: 45px;      /* 버튼 아래 */
+            left: 0;       /* 버튼 오른쪽에 맞춤 */
+
+            width: 350px;
+
+            width: 350px;
+            max-height: 400px;   /* 👈 추가 */
+            overflow-y: auto;    /* 👈 알림 많아지면 스크롤 */
+
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+        }
+        .notification-item {
+            padding: 16px;       /* 늘림 */
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: #f5f5f5;
+        }
+
+        .notification-item.unread {
+            background: #f8fbff;   /* 거의 흰색 */
+            font-weight: 600;
+
+        }
+
+        .notification-item a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .notification-content {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;   /* 👈 세로 배치 */
+            align-items: flex-start;
+            font-size: 14px;
+        }
+        .notification-content small {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .notification-content span {
+            display: block;
+            word-break: break-word;   /* 긴 문장 줄바꿈 */
+        }
+
+        .notification-empty {
+            padding: 20px;
+            text-align: center;
+            color: #888;
+
+            width: 220px;      /* 👈 폭 줄이기 */
+            margin: 0 auto;    /* 👈 가운데 정렬 */
         }
     </style>
 </head>
 <body>
 <div class="container">
 
-    <div style="text-align:right">
-        <div class="notification">
+    <div class="notification-wrapper">
+        <button class="notification-btn" onclick="toggleNotification()">
             🔔
             <span class="badge"
+                  id="notificationBadge"
                   th:if="${unreadCount > 0}"
                   th:text="${unreadCount}">0</span>
+        </button>
+
+        <div class="notification-dropdown" id="notificationDropdown">
+            <!-- 알림 없을 때 -->
+            <div th:if="${#lists.isEmpty(notifications)}"
+                 class="notification-empty">
+                새로운 알림이 없습니다.
+            </div>
+
+            <div th:each="noti : ${notifications}"
+                 class="notification-item"
+                 th:classappend="${!noti.read} ? ' unread'"
+                 th:attr="data-id=${noti.id},data-url=${noti.url}">
+
+                <div class="notification-content">
+                    <span th:text="${noti.message}">알림 내용</span>
+                    <small th:text="${#temporals.format(noti.createdAt, 'MM-dd HH:mm')}">
+                        시간
+                    </small>
+                </div>
+
+            </div>
+
         </div>
     </div>
 
@@ -95,4 +202,52 @@
     </div>
 </div>
 </body>
+<script>
+
+    function toggleNotification() {
+        const dropdown = document.getElementById("notificationDropdown");
+        dropdown.style.display =
+            dropdown.style.display === "block" ? "none" : "block";
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".notification-item").forEach(item => {
+
+            item.addEventListener("click", function () {
+
+                console.log("clicked");
+
+                const notificationId = this.dataset.id;
+                const url = this.dataset.url;
+
+                fetch(`/notification/${notificationId}/read`, {
+                    method: "POST"
+                })
+                    .then(res => res.json())
+                    .then(data => {
+
+                        this.classList.remove("unread");
+
+                        const badge = document.getElementById("notificationBadge");
+
+                        if (data.unreadCount > 0) {
+                            badge.innerText = data.unreadCount;
+                        } else if (badge) {
+                            badge.style.display = "none";
+                        }
+
+                        console.log("url = "+url);
+                        window.location.href = url;
+                    });
+
+            });
+
+        });
+
+    });
+
+
+
+</script>
 </html>

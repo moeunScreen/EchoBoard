@@ -11,6 +11,7 @@ import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
+
     List<Notification> findByReceiver_IdAndReadFalse(Long receiverId);
 
     @Modifying(clearAutomatically = true)

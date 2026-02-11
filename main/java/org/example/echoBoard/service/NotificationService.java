@@ -32,16 +32,13 @@ public class NotificationService {
         notificationRepository.readAllByUserId(userId);
     }
 
-
     @Transactional
     public void setRead(Long nId){
         notificationRepository.readById(nId);
     }
 
     public Notification findById(Long nId){
-
         return notificationRepository.findById(nId)
                 .orElseThrow();
-
     }
 }
