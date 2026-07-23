@@ -1,4 +1,4 @@
-서비스 데이터베이스 구조입니다. <img src="./images/erd.svg" width="1000"/>
+서비스 데이터베이스 구조입니다. <img src="./images/ERD.svg" width="1000"/>
 
 # Entity정보및 설명
 
